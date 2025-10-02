@@ -513,6 +513,75 @@
             return { terjual, uangSupplier, labaKotor, omzet };
         };
 
+        // PERBAIKAN: Filter data berdasarkan periode yang dipilih
+        const getFilteredSalesData = () => {
+            const periode = document.getElementById('periodeRingkas').value;
+            const tanggalMulai = document.getElementById('tanggalMulaiRingkas').value;
+            const tanggalSelesai = document.getElementById('tanggalSelesaiRingkas').value;
+            
+            let filteredData = [...salesData];
+            
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            switch (periode) {
+                case 'harian':
+                    filteredData = filteredData.filter(item => item.tanggal === getToday());
+                    break;
+                case 'mingguan':
+                    const startOfWeek = new Date(today);
+                    startOfWeek.setDate(today.getDate() - today.getDay());
+                    startOfWeek.setHours(0,0,0,0);
+                    
+                    const endOfWeek = new Date(today);
+                    endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+                    endOfWeek.setHours(23,59,59,999);
+                    
+                    filteredData = filteredData.filter(item => {
+                        const itemDate = new Date(item.tanggal);
+                        return itemDate >= startOfWeek && itemDate <= endOfWeek;
+                    });
+                    break;
+                case 'bulanan':
+                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    endOfMonth.setHours(23,59,59,999);
+                    
+                    filteredData = filteredData.filter(item => {
+                        const itemDate = new Date(item.tanggal);
+                        return itemDate >= startOfMonth && itemDate <= endOfMonth;
+                    });
+                    break;
+                case 'tahunan':
+                    const startOfYear = new Date(today.getFullYear(), 0, 1);
+                    const endOfYear = new Date(today.getFullYear(), 11, 31);
+                    endOfYear.setHours(23,59,59,999);
+                    
+                    filteredData = filteredData.filter(item => {
+                        const itemDate = new Date(item.tanggal);
+                        return itemDate >= startOfYear && itemDate <= endOfYear;
+                    });
+                    break;
+                case 'custom':
+                    if (tanggalMulai && tanggalSelesai) {
+                        const startCustom = new Date(tanggalMulai);
+                        startCustom.setHours(0,0,0,0);
+                        const endCustom = new Date(tanggalSelesai);
+                        endCustom.setHours(23,59,59,999);
+                        
+                        filteredData = filteredData.filter(item => {
+                            const itemDate = new Date(item.tanggal);
+                            return itemDate >= startCustom && itemDate <= endCustom;
+                        });
+                    }
+                    break;
+                default:
+                    break;
+            }
+            
+            return filteredData;
+        };
+
         // Authentication Functions
         const loginWithEmailPassword = async (email, password) => {
             try {
@@ -565,6 +634,7 @@
                     uangSupplier,
                     labaKotor,
                     omzet,
+                    nama: currentUser.nama, // TAMBAHKAN FIELD NAMA
                     createdBy: currentUser.uid,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -597,6 +667,7 @@
                     uangSupplier,
                     labaKotor,
                     omzet,
+                    nama: currentUser.nama, // TAMBAHKAN FIELD NAMA
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
@@ -1239,23 +1310,28 @@
             });
         };
 
+        // PERBAIKAN: Update laporan ringkas dengan filter dan nama karyawan
         const updateLaporanRingkas = () => {
+            const filteredSales = getFilteredSalesData();
+            
             let totalTerjual = 0, totalOmzet = 0, totalLabaKotor = 0;
             
             // Reset karyawan data
             const karyawanData = {};
             
-            // Calculate totals from sales data
-            salesData.forEach(item => {
+            // Calculate totals from filtered sales data
+            filteredSales.forEach(item => {
                 totalTerjual += item.terjual || 0;
                 totalOmzet += item.omzet || 0;
                 totalLabaKotor += item.labaKotor || 0;
                 
-                // Group by createdBy (karyawan)
+                // Group by createdBy (karyawan) dan gunakan nama dari field nama
                 const createdBy = item.createdBy;
+                const namaKaryawan = item.nama || `Karyawan ${createdBy.substring(0, 5)}...`;
+                
                 if (!karyawanData[createdBy]) {
                     karyawanData[createdBy] = {
-                        nama: `Karyawan ${createdBy.substring(0, 5)}...`, // Default name
+                        nama: namaKaryawan,
                         omzet: 0,
                         labaKotor: 0,
                         totalTerjual: 0
@@ -1458,6 +1534,7 @@
                             sisa: 0,
                             // terjual, uangSupplier, labaKotor, omzet akan dihitung otomatis
                             tanggal: today,
+                            nama: currentUser.nama,
                             createdBy: currentUser.uid,
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         };
@@ -1562,8 +1639,13 @@
             });
         };
 
+        // PERBAIKAN: Setup filter listeners untuk update otomatis
         const setupLaporanRingkasFilterListeners = () => {
             const periodeSelect = document.getElementById('periodeRingkas');
+            const tanggalMulai = document.getElementById('tanggalMulaiRingkas');
+            const tanggalSelesai = document.getElementById('tanggalSelesaiRingkas');
+            
+            const updateLaporan = () => updateLaporanRingkas();
             
             if (periodeSelect) {
                 periodeSelect.addEventListener('change', function() {
@@ -1577,7 +1659,16 @@
                         customPeriodGroup.classList.add('hidden');
                         customPeriodGroup2.classList.add('hidden');
                     }
+                    updateLaporan();
                 });
+            }
+            
+            if (tanggalMulai) {
+                tanggalMulai.addEventListener('change', updateLaporan);
+            }
+            
+            if (tanggalSelesai) {
+                tanggalSelesai.addEventListener('change', updateLaporan);
             }
         };
 
@@ -1726,6 +1817,9 @@
                         const userData = await getUserData(user.uid);
                         userRole = userData.role;
                         
+                        // TAMBAHKAN: Simpan nama user ke currentUser
+                        currentUser.nama = userData.nama;
+                        
                         // Update UI
                         userName.textContent = userData.nama;
                         userRoleElement.textContent = userRole;
@@ -1802,7 +1896,7 @@
             setupCurrencyInputs();
             setupSearchFunctionality();
             setupTableZoom();
-            setupLaporanRingkasFilterListeners();
+            setupLaporanRingkasFilterListeners(); // PERBAIKAN: Panggil fungsi yang sudah diperbaiki
         });
     </script>
 </body>
