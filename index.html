@@ -263,7 +263,7 @@
                         </table>
                     </div>
                     <div class="actions">
-                        <button class="btn btn-secondary" id="generateTodayBtn"><i class="fas fa-cloud"></i> Cek/Generate Today</button>
+                        <button class="btn btn-secondary" id="duplikasiEntriBtn"><i class="fas fa-copy"></i> Duplikasi Entri</button>
                     </div>
                 </div>
 
@@ -481,7 +481,7 @@
         const contentContainer = document.getElementById('contentContainer');
         const allContentSections = document.querySelectorAll('.content-section');
         const tambahEntriBtn = document.getElementById('tambahEntri');
-        const generateTodayBtn = document.getElementById('generateTodayBtn');
+        const duplikasiEntriBtn = document.getElementById('duplikasiEntriBtn');
         
         const currentZoomLevels = { ringkas: 1, detail: 1, supplier: 1, supplierPopup: 1 };
         const minZoomLevel = 0.5, maxZoomLevel = 2, zoomStep = 0.1;
@@ -495,7 +495,14 @@
         const parseCurrency = value => typeof value === 'string' ? parseInt(value.replace(/[^\d]/g, '')) || 0 : value || 0;
         const getPageTitle = contentId => ({ 'inputPenjualan': 'Input Penjualan', 'laporanRingkas': 'Laporan Keuangan Ringkas', 'arusKas': 'Arus Kas' }[contentId] || 'Dashboard');
         const getTabLabel = tab => ({ 'ringkas': 'Ringkas', 'detail': 'Detail', 'supplier': 'Uang Supplier' }[tab] || tab);
+        const getToday = () => new Date().toISOString().split('T')[0];
         
+        // Filter data untuk hanya menampilkan data hari ini
+        const getTodaySalesData = () => {
+            const today = getToday();
+            return salesData.filter(item => item.tanggal === today);
+        };
+
         // Calculate sales metrics
         const calculateSalesMetrics = (stok, sisa, hargaBeli, hargaJual) => {
             const terjual = stok - sisa;
@@ -572,6 +579,15 @@
 
         const updateSale = async (id, saleData) => {
             try {
+                const today = getToday();
+                const sale = salesData.find(item => item.id === id);
+                
+                // Cek apakah dokumen yang akan diupdate adalah data hari ini
+                if (sale && sale.tanggal !== today) {
+                    alert("Tidak dapat mengupdate data yang bukan hari ini.");
+                    throw new Error("Update hanya diizinkan untuk data hari ini.");
+                }
+
                 const { stok, sisa, hargaBeli, hargaJual } = saleData;
                 const { terjual, uangSupplier, labaKotor, omzet } = calculateSalesMetrics(stok, sisa, hargaBeli, hargaJual);
                 
@@ -973,13 +989,15 @@
             const tbody = document.querySelector('#tableRingkas tbody');
             tbody.innerHTML = '';
             
-            if (salesData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">Belum ada data penjualan</td></tr>';
+            const dataHariIni = getTodaySalesData();
+            
+            if (dataHariIni.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">Belum ada data penjualan hari ini</td></tr>';
                 return;
             }
             
             const groupedData = {};
-            salesData.forEach(item => {
+            dataHariIni.forEach(item => {
                 const key = `${item.supplier}-${item.barang}`;
                 if (!groupedData[key]) {
                     groupedData[key] = { supplier: item.supplier, barang: item.barang, stok: 0, sisa: 0 };
@@ -1011,8 +1029,13 @@
 
         const updateSalesFromRingkas = async (supplier, barang, field, value) => {
             try {
-                // Find all sales with matching supplier and barang
-                const matchingSales = salesData.filter(item => item.supplier === supplier && item.barang === barang);
+                const today = getToday();
+                // Find all sales with matching supplier and barang HARI INI
+                const matchingSales = salesData.filter(item => 
+                    item.supplier === supplier && 
+                    item.barang === barang && 
+                    item.tanggal === today
+                );
                 
                 // Update each matching sale
                 for (const sale of matchingSales) {
@@ -1044,12 +1067,14 @@
             const tbody = document.querySelector('#tableDetail tbody');
             tbody.innerHTML = '';
             
-            if (salesData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px;">Belum ada data penjualan</td></tr>';
+            const dataHariIni = getTodaySalesData();
+            
+            if (dataHariIni.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px;">Belum ada data penjualan hari ini</td></tr>';
                 return;
             }
             
-            salesData.forEach((item, index) => {
+            dataHariIni.forEach((item, index) => {
                 const row = document.createElement('tr');
                 const terjual = item.stok - item.sisa;
                 const uangSupplier = terjual * item.hargaBeli;
@@ -1129,13 +1154,15 @@
             const tbody = document.querySelector('#tableSupplier tbody');
             tbody.innerHTML = '';
             
-            if (salesData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; padding: 20px;">Belum ada data supplier</td></tr>';
+            const dataHariIni = getTodaySalesData();
+            
+            if (dataHariIni.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; padding: 20px;">Belum ada data supplier hari ini</td></tr>';
                 return;
             }
             
             const supplierTotals = {};
-            salesData.forEach(item => {
+            dataHariIni.forEach(item => {
                 const terjual = item.stok - item.sisa;
                 const uangSupplier = terjual * item.hargaBeli;
                 
@@ -1364,7 +1391,7 @@
         const setupTambahEntri = () => {
             if (tambahEntriBtn) {
                 tambahEntriBtn.addEventListener('click', async function() {
-                    const today = new Date().toISOString().split('T')[0];
+                    const today = getToday();
                     
                     const newItem = {
                         tanggal: today,
@@ -1386,30 +1413,64 @@
             }
         };
 
-        const setupGenerateToday = () => {
-            if (generateTodayBtn) {
-                generateTodayBtn.addEventListener('click', async function() {
-                    const today = new Date().toISOString().split('T')[0];
-                    const todaySales = salesData.filter(item => item.tanggal === today);
+        const setupDuplikasiEntri = () => {
+            if (duplikasiEntriBtn) {
+                duplikasiEntriBtn.addEventListener('click', async function() {
+                    const today = getToday();
                     
-                    if (todaySales.length === 0) {
-                        alert(`Tidak ada data penjualan untuk hari ini (${today}).`);
-                    } else {
-                        let message = `Data penjualan hari ini (${today}):\n\n`;
-                        let totalOmzet = 0;
-                        let totalLaba = 0;
-                        
-                        todaySales.forEach(sale => {
-                            message += `- ${sale.barang}: Terjual ${sale.terjual}, Omzet ${formatCurrency(sale.omzet)}\n`;
-                            totalOmzet += sale.omzet;
-                            totalLaba += sale.labaKotor;
-                        });
-                        
-                        message += `\nTotal Omzet: ${formatCurrency(totalOmzet)}\n`;
-                        message += `Total Laba Kotor: ${formatCurrency(totalLaba)}`;
-                        
-                        alert(message);
+                    // Cek apakah sudah ada data hari ini
+                    const salesHariIni = getTodaySalesData();
+                    if (salesHariIni.length > 0) {
+                        alert(`Data hari ini (${today}) sudah ada.`);
+                        return;
                     }
+                    
+                    // Cari data kemarin (tanggal terakhir sebelum hari ini)
+                    const yesterdayData = salesData
+                        .filter(item => item.tanggal < today)
+                        .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+                    
+                    if (yesterdayData.length === 0) {
+                        alert('Tidak ada data kemarin untuk diduplikasi.');
+                        return;
+                    }
+                    
+                    // Ambil tanggal kemarin
+                    const tanggalKemarin = yesterdayData[0].tanggal;
+                    
+                    // Filter data yang tanggalnya sama dengan tanggalKemarin
+                    const dataKemarin = salesData.filter(item => item.tanggal === tanggalKemarin);
+                    
+                    if (dataKemarin.length === 0) {
+                        alert('Tidak ada data untuk tanggal kemarin.');
+                        return;
+                    }
+                    
+                    // Duplikasi setiap dokumen
+                    let successCount = 0;
+                    for (const doc of dataKemarin) {
+                        const newDoc = {
+                            barang: doc.barang,
+                            hargaBeli: doc.hargaBeli,
+                            hargaJual: doc.hargaJual,
+                            supplier: doc.supplier,
+                            stok: 0,
+                            sisa: 0,
+                            // terjual, uangSupplier, labaKotor, omzet akan dihitung otomatis
+                            tanggal: today,
+                            createdBy: currentUser.uid,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        };
+                        
+                        try {
+                            await addSale(newDoc);
+                            successCount++;
+                        } catch (error) {
+                            console.error("Gagal menduplikasi entri:", error);
+                        }
+                    }
+                    
+                    alert(`Berhasil menduplikasi ${successCount} entri dari tanggal ${tanggalKemarin} ke ${today}.`);
                 });
             }
         };
@@ -1435,7 +1496,7 @@
             
             if (tambahEntriSupplier) {
                 tambahEntriSupplier.addEventListener('click', async function() {
-                    const today = new Date().toISOString().split('T')[0];
+                    const today = getToday();
                     
                     const newItem = {
                         tanggal: today,
@@ -1474,7 +1535,7 @@
             
             document.getElementById('bayarGajiBtn').addEventListener('click', async function() {
                 const value = parseCurrency(document.getElementById('inputGajiKaryawan').value);
-                const today = new Date().toISOString().split('T')[0];
+                const today = getToday();
                 
                 try {
                     await addGaji({ tanggal: today, gaji: value });
@@ -1488,7 +1549,7 @@
             
             document.getElementById('tambahPengeluaranBtn').addEventListener('click', async function() {
                 const value = parseCurrency(document.getElementById('inputPengeluaranLain').value);
-                const today = new Date().toISOString().split('T')[0];
+                const today = getToday();
                 
                 try {
                     await addPengeluaran({ tanggal: today, costOther: value });
@@ -1735,7 +1796,7 @@
             window.addEventListener('click', (e) => { if (e.target === menuPopup) menuPopup.classList.remove('active'); });
             
             setupTambahEntri();
-            setupGenerateToday();
+            setupDuplikasiEntri();
             setupSupplierPopup();
             setupArusKas();
             setupCurrencyInputs();
