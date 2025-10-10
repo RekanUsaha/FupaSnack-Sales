@@ -5,38 +5,38 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-    
+
     // Sales collection - karyawan hanya akses data sendiri, admin akses semua
     match /sales/{saleId} {
       allow create: if request.auth != null && 
         request.resource.data.createdBy == request.auth.uid;
-      
+
       allow read, update, delete: if request.auth != null && 
         (resource.data.createdBy == request.auth.uid || 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin');
     }
-    
+
     // BelumDibayar collection - sama seperti sales
     match /belumDibayar/{docId} {
       allow create: if request.auth != null && 
         request.resource.data.createdBy == request.auth.uid;
-      
+
       allow read, update, delete: if request.auth != null && 
         (resource.data.createdBy == request.auth.uid || 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin');
     }
-    
+
     // Collections hanya untuk Admin
     match /gaji/{docId} {
       allow read, write: if request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
-    
+
     match /pengeluaranLainnya/{docId} {
       allow read, write: if request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
-    
+
     match /kasSaatIni/{docId} {
       allow read, write: if request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
