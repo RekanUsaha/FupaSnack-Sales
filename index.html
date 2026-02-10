@@ -99,9 +99,6 @@
         #inputDetail th, #inputDetail td { padding: 15px 10px; min-width: 100px; }
         #inputDetail input { width: 100%; min-width: 80px; padding: 8px; }
         .action-column { width: 60px; text-align: center; }
-        .manual-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .manual-input-card { background-color: var(--primary-color); border-radius: 8px; padding: 15px; box-shadow: var(--shadow); }
-        .manual-input-card h3 { margin-bottom: 10px; font-size: 1rem; }
         .input-with-btn { display: flex; gap: 10px; }
         .input-with-btn input { flex: 1; }
         .input-with-btn button { white-space: nowrap; }
@@ -117,22 +114,11 @@
         .data-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .data-label { font-weight: 500; }
         .data-value { font-weight: 600; color: var(--accent-color); }
-        .date-display { padding: 10px 15px; background-color: transparent; border: none; font-family: 'Inter', sans-serif; color: var(--text-color); }
-        .additional-card { background-color: var(--primary-color); border-radius: 10px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px; text-align: center; }
-        .additional-card h3 { font-size: 1rem; margin-bottom: 10px; color: var(--light-text); }
-        .additional-card .value { font-size: 1.8rem; font-weight: 700; color: var(--accent-color); }
-        .zoom-controls { display: flex; gap: 5px; margin-left: 10px; }
-        .zoom-btn { background-color: var(--accent-color); color: white; border: none; border-radius: 5px; padding: 8px 12px; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 5px; }
-        .zoom-btn:hover { background-color: var(--secondary-color); }
         .search-container { display: flex; gap: 10px; margin-bottom: 15px; width: 100%; align-items: center; }
         .search-input { flex: 1; padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--primary-color); color: var(--text-color); max-width: 200px; }
         .detail-header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
         .detail-search-container { display: flex; align-items: center; gap: 10px; }
         #inputDetail th:nth-child(10), #inputDetail td:nth-child(10) { min-width: 150px; width: 150px; }
-        .scrollable-section { overflow-y: auto; max-height: 450px; }
-        #tableRingkas th:nth-child(3), #tableRingkas td:nth-child(3), #tableRingkas th:nth-child(4), #tableRingkas td:nth-child(4) { width: 100px; min-width: 100px; }
-        .small-add-btn { padding: 8px 12px !important; font-size: 0.9rem !important; }
-        .detail-controls { display: flex; align-items: center; gap: 10px; }
         #inputDetail th:nth-child(3), #inputDetail td:nth-child(3) { min-width: 200px; }
         #inputDetail th:nth-child(4), #inputDetail td:nth-child(4) { min-width: 200px; }
         #inputDetail th:nth-child(8), #inputDetail td:nth-child(8),
@@ -149,6 +135,14 @@
         .login-footer { text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--light-text); }
         .user-info { display: flex; align-items: center; gap: 10px; margin-right: 15px; }
         .user-role { font-size: 0.8rem; color: var(--light-text); padding: 2px 8px; background-color: var(--border-color); border-radius: 10px; }
+        .control-buttons { display: flex; gap: 5px; align-items: center; }
+        .control-btn { background-color: var(--accent-color); color: white; border: none; border-radius: 5px; padding: 8px 12px; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 5px; }
+        .control-btn:hover { background-color: var(--secondary-color); }
+        .edit-mode .table-container input:not([readonly]) { background-color: rgba(79, 195, 247, 0.1); border-color: var(--accent-color); }
+        .supplier-popup table { min-width: 800px; }
+        .btn-success { background-color: var(--success-color) !important; }
+        .btn-success:hover { background-color: #388e3c !important; }
+        .global-edit-mode .table-container input:not([readonly]) { background-color: rgba(79, 195, 247, 0.1); border-color: var(--accent-color); }
     </style>
 </head>
 <body>
@@ -172,7 +166,7 @@
                         <span id="loginText">Login</span>
                     </button>
                 </form>
-                <div class="login-footer" id="loginFooter">Untuk testing: isi email dan password sembarang</div>
+                <div class="login-footer" id="loginFooter">Gunakan email dan password yang telah diberikan</div>
             </div>
         </div>
     </div>
@@ -209,9 +203,10 @@
                 <div class="content-section hidden" id="inputRingkas">
                     <div class="search-container">
                         <input type="text" class="search-input" id="searchRingkas" placeholder="Cari nama supplier atau barang...">
-                        <div class="zoom-controls">
-                            <button class="zoom-btn" id="zoomOutRingkas"><i class="fas fa-search-minus"></i></button>
-                            <button class="zoom-btn" id="zoomInRingkas"><i class="fas fa-search-plus"></i></button>
+                        <div class="control-buttons">
+                            <button class="control-btn" id="editBatchRingkas" title="Edit Batch"><i class="fas fa-edit"></i></button>
+                            <button class="control-btn" id="zoomOutRingkas"><i class="fas fa-search-minus"></i></button>
+                            <button class="control-btn" id="zoomInRingkas"><i class="fas fa-search-plus"></i></button>
                         </div>
                     </div>
                     <div class="table-container table-10-rows">
@@ -230,17 +225,13 @@
                 </div>
 
                 <div class="content-section hidden" id="inputDetail">
-                    <div class="detail-header">
-                        <div class="detail-controls">
-                            <div class="search-container">
-                                <input type="text" class="search-input" id="searchDetail" placeholder="Cari nama supplier atau barang">
-                                <div class="zoom-controls">
-                                    <button class="zoom-btn" id="zoomOutDetail"><i class="fas fa-search-minus"></i></button>
-                                    <button class="zoom-btn" id="zoomInDetail"><i class="fas fa-search-plus"></i></button>
-                                </div>
-                                <button class="btn btn-primary small-add-btn" id="tambahEntri"><i class="fas fa-plus"></i></button>
-                            </div>
+                    <div class="search-container">
+                        <input type="text" class="search-input" id="searchDetail" placeholder="Cari nama supplier atau barang">
+                        <div class="control-buttons">
+                            <button class="control-btn" id="editBatchDetail" title="Edit Batch"><i class="fas fa-edit"></i></button>
+                            <button class="control-btn" id="supplierPopupDetail" title="Supplier"><i class="fas fa-truck"></i></button>
                         </div>
+                        <button class="btn btn-primary small-add-btn" id="tambahEntri"><i class="fas fa-plus"></i></button>
                     </div>
                     
                     <div class="table-container table-10-rows">
@@ -262,18 +253,15 @@
                             <tbody></tbody>
                         </table>
                     </div>
-                    <div class="actions">
-                        <button class="btn btn-secondary" id="duplikasiEntriBtn"><i class="fas fa-copy"></i> Duplikasi Entri</button>
-                    </div>
                 </div>
 
                 <div class="content-section hidden" id="inputSupplier">
                     <div class="search-container">
                         <input type="text" class="search-input" id="searchSupplier" placeholder="Cari nama supplier...">
-                        <div class="zoom-controls">
-                            <button class="zoom-btn" id="zoomOutSupplier"><i class="fas fa-search-minus"></i></button>
-                            <button class="zoom-btn" id="zoomInSupplier"><i class="fas fa-search-plus"></i></button>
-                            <button class="zoom-btn" id="infoSupplierBtn"><i class="fas fa-question"></i></button>
+                        <div class="control-buttons">
+                            <button class="control-btn" id="zoomOutSupplier"><i class="fas fa-search-minus"></i></button>
+                            <button class="control-btn" id="zoomInSupplier"><i class="fas fa-search-plus"></i></button>
+                            <button class="control-btn" id="infoSupplierBtn"><i class="fas fa-question"></i></button>
                         </div>
                     </div>
                     <div class="table-container table-10-rows">
@@ -297,7 +285,6 @@
                                 <option value="harian">Hari Ini</option>
                                 <option value="mingguan">Minggu Ini</option>
                                 <option value="bulanan">Bulan Ini</option>
-                                <option value="tahunan">Tahun Ini</option>
                                 <option value="custom">Periode</option>
                             </select>
                         </div>
@@ -327,69 +314,6 @@
                     </div>
                     
                     <div class="card-container" id="karyawanCards"></div>
-                </div>
-
-                <div class="content-section hidden" id="arusKas">
-                    <div class="financial-summary">
-                        <div class="financial-card">
-                            <h3>Omzet</h3>
-                            <div class="amount" id="arusKasOmzet">Rp 0</div>
-                        </div>
-                        <div class="financial-card">
-                            <h3>Laba Kotor</h3>
-                            <div class="amount" id="arusKasLabaKotor">Rp 0</div>
-                        </div>
-                        <div class="financial-card">
-                            <h3>Laba Bersih</h3>
-                            <div class="amount" id="arusKasLabaBersih">Rp 0</div>
-                        </div>
-                        <div class="financial-card">
-                            <h3>Rugi</h3>
-                            <div class="amount" id="arusKasRugi">Rp 0</div>
-                        </div>
-                        <div class="financial-card">
-                            <h3>Pengeluaran</h3>
-                            <div class="amount" id="arusKasPengeluaran">Rp 0</div>
-                        </div>
-                        <div class="financial-card">
-                            <h3>Kas Saat Ini</h3>
-                            <div class="amount" id="arusKasSaatIni">Rp 0</div>
-                        </div>
-                        <div class="financial-card">
-                            <h3>Kas Terbaru</h3>
-                            <div class="amount" id="arusKasTerbaru">Rp 0</div>
-                        </div>
-                    </div>
-                    
-                    <div class="manual-inputs">
-                        <div class="manual-input-card">
-                            <h3>Input Manual Kas Saat Ini</h3>
-                            <div class="input-with-btn">
-                                <div class="currency-input">
-                                    <input type="text" id="inputKasManual" placeholder="0">
-                                </div>
-                                <button class="btn btn-secondary" id="updateKasBtn"><i class="fas fa-edit"></i> Update</button>
-                            </div>
-                        </div>
-                        <div class="manual-input-card">
-                            <h3>Input Manual Gaji Karyawan</h3>
-                            <div class="input-with-btn">
-                                <div class="currency-input">
-                                    <input type="text" id="inputGajiKaryawan" placeholder="0">
-                                </div>
-                                <button class="btn btn-secondary" id="bayarGajiBtn"><i class="fas fa-money-bill"></i> Bayar</button>
-                            </div>
-                        </div>
-                        <div class="manual-input-card">
-                            <h3>Input Manual Pengeluaran Lainnya</h3>
-                            <div class="input-with-btn">
-                                <div class="currency-input">
-                                    <input type="text" id="inputPengeluaranLain" placeholder="0">
-                                </div>
-                                <button class="btn btn-secondary" id="tambahPengeluaranBtn"><i class="fas fa-plus"></i> Tambah</button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -436,15 +360,53 @@
         </div>
     </div>
 
+    <div class="popup" id="supplierMasterPopup">
+        <div class="popup-content fullscreen-popup">
+            <div class="popup-header">
+                <h3 class="popup-title">Master Supplier</h3>
+                <button class="popup-close" id="closeSupplierMaster"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="popup-body">
+                <div class="actions" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <button class="btn btn-primary" id="pasteSelectedSupplier"><i class="fas fa-paste"></i> Paste ke Detail</button>
+                        <button class="btn btn-danger" id="deleteSelectedSupplier"><i class="fas fa-trash"></i> Hapus Terpilih</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" id="editBatchSupplierMaster"><i class="fas fa-edit"></i> Edit Batch</button>
+                        <button class="btn btn-primary" id="tambahSupplierMaster"><i class="fas fa-plus"></i> Tambah Supplier</button>
+                    </div>
+                </div>
+                <div class="table-container fullscreen-table-container">
+                    <table id="tableSupplierMaster" class="supplier-popup">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">
+                                    <input type="checkbox" id="selectAllCheckbox">
+                                </th>
+                                <th>Nama Supplier</th>
+                                <th>Barang</th>
+                                <th>Harga Beli</th>
+                                <th>Harga Jual</th>
+                                <th class="action-column">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Firebase Configuration
+        // Firebase Configuration (UPDATED)
         const firebaseConfig = {
-            apiKey: "AIzaSyApYdiUlLMb9ihBkLnCjDpLJHqYFRFS3Fw",
-            authDomain: "fupa-snack.firebaseapp.com",
-            projectId: "fupa-snack",
-            storageBucket: "fupa-snack.firebasestorage.app",
-            messagingSenderId: "972524876738",
-            appId: "1:972524876738:web:dd0d57dd8bf2d8a8dd9c5b"
+            apiKey: "AIzaSyCP9CCaVgti8Iz2CG8m_mcXAr-dSSZ9KVo",
+            authDomain: "fupasnack1.firebaseapp.com",
+            projectId: "fupasnack1",
+            storageBucket: "fupasnack1.firebasestorage.app",
+            messagingSenderId: "1053804570791",
+            appId: "1:1053804570791:web:edb758044ed7d6bda51382"
         };
 
         // Initialize Firebase
@@ -457,11 +419,17 @@
         let userRole = null;
         let salesData = [];
         let supplierData = [];
-        let gajiData = [];
-        let pengeluaranData = [];
-        let kasData = [];
         let belumDibayarData = [];
+        let supplierMasterData = [];
+        let isGlobalEditMode = false; // Status edit mode global
+        let batchChanges = {
+            ringkas: new Map(), // key: supplier-barang, value: {stok, sisa}
+            detail: new Map(),   // key: saleId, value: {field: value}
+            supplierMaster: new Map() // key: supplierMasterId, value: {field: value}
+        };
+        let selectedSupplierIds = new Set();
 
+        // DOM Elements
         const loginPopup = document.getElementById('loginPopup');
         const loginForm = document.getElementById('loginForm');
         const loginBtn = document.getElementById('loginBtn');
@@ -481,7 +449,6 @@
         const contentContainer = document.getElementById('contentContainer');
         const allContentSections = document.querySelectorAll('.content-section');
         const tambahEntriBtn = document.getElementById('tambahEntri');
-        const duplikasiEntriBtn = document.getElementById('duplikasiEntriBtn');
         
         const currentZoomLevels = { ringkas: 1, detail: 1, supplier: 1, supplierPopup: 1 };
         const minZoomLevel = 0.5, maxZoomLevel = 2, zoomStep = 0.1;
@@ -493,17 +460,15 @@
         const formatCurrency = amount => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
         const formatNumber = number => new Intl.NumberFormat('id-ID').format(number);
         const parseCurrency = value => typeof value === 'string' ? parseInt(value.replace(/[^\d]/g, '')) || 0 : value || 0;
-        const getPageTitle = contentId => ({ 'inputPenjualan': 'Input Penjualan', 'laporanRingkas': 'Laporan Keuangan Ringkas', 'arusKas': 'Arus Kas' }[contentId] || 'Dashboard');
+        const getPageTitle = contentId => ({ 'inputPenjualan': 'Input Penjualan', 'laporanRingkas': 'Laporan Keuangan Ringkas' }[contentId] || 'Dashboard');
         const getTabLabel = tab => ({ 'ringkas': 'Ringkas', 'detail': 'Detail', 'supplier': 'Uang Supplier' }[tab] || tab);
         const getToday = () => new Date().toISOString().split('T')[0];
         
-        // Filter data untuk hanya menampilkan data hari ini
         const getTodaySalesData = () => {
             const today = getToday();
             return salesData.filter(item => item.tanggal === today);
         };
 
-        // Calculate sales metrics
         const calculateSalesMetrics = (stok, sisa, hargaBeli, hargaJual) => {
             const terjual = stok - sisa;
             const uangSupplier = terjual * hargaBeli;
@@ -513,7 +478,6 @@
             return { terjual, uangSupplier, labaKotor, omzet };
         };
 
-        // PERBAIKAN: Filter data berdasarkan periode yang dipilih
         const getFilteredSalesData = () => {
             const periode = document.getElementById('periodeRingkas').value;
             const tanggalMulai = document.getElementById('tanggalMulaiRingkas').value;
@@ -550,16 +514,6 @@
                     filteredData = filteredData.filter(item => {
                         const itemDate = new Date(item.tanggal);
                         return itemDate >= startOfMonth && itemDate <= endOfMonth;
-                    });
-                    break;
-                case 'tahunan':
-                    const startOfYear = new Date(today.getFullYear(), 0, 1);
-                    const endOfYear = new Date(today.getFullYear(), 11, 31);
-                    endOfYear.setHours(23,59,59,999);
-                    
-                    filteredData = filteredData.filter(item => {
-                        const itemDate = new Date(item.tanggal);
-                        return itemDate >= startOfYear && itemDate <= endOfYear;
                     });
                     break;
                 case 'custom':
@@ -606,11 +560,10 @@
                 if (userDoc.exists) {
                     return userDoc.data();
                 } else {
-                    // Create user document if it doesn't exist
                     const userData = {
                         nama: currentUser.email.split('@')[0],
                         email: currentUser.email,
-                        role: 'Karyawan' // Default role
+                        role: 'Karyawan'
                     };
                     await db.collection('users').doc(uid).set(userData);
                     return userData;
@@ -622,7 +575,6 @@
         };
 
         // Firestore CRUD Operations
-        // Sales Operations
         const addSale = async (saleData) => {
             try {
                 const { stok, sisa, hargaBeli, hargaJual } = saleData;
@@ -634,7 +586,7 @@
                     uangSupplier,
                     labaKotor,
                     omzet,
-                    nama: currentUser.nama, // TAMBAHKAN FIELD NAMA
+                    nama: currentUser.nama,
                     createdBy: currentUser.uid,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -652,7 +604,6 @@
                 const today = getToday();
                 const sale = salesData.find(item => item.id === id);
                 
-                // Cek apakah dokumen yang akan diupdate adalah data hari ini
                 if (sale && sale.tanggal !== today) {
                     alert("Tidak dapat mengupdate data yang bukan hari ini.");
                     throw new Error("Update hanya diizinkan untuk data hari ini.");
@@ -667,13 +618,111 @@
                     uangSupplier,
                     labaKotor,
                     omzet,
-                    nama: currentUser.nama, // TAMBAHKAN FIELD NAMA
+                    nama: currentUser.nama,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
                 await db.collection('sales').doc(id).update(saleWithCalculations);
             } catch (error) {
                 console.error("Error updating sale:", error);
+                throw error;
+            }
+        };
+
+        const updateSalesBatch = async (updates) => {
+            try {
+                const batch = db.batch();
+                const today = getToday();
+                
+                for (const [id, data] of updates) {
+                    const sale = salesData.find(item => item.id === id);
+                    if (sale && sale.tanggal !== today) {
+                        alert(`Tidak dapat mengupdate data ${id} yang bukan hari ini.`);
+                        continue;
+                    }
+                    
+                    const saleRef = db.collection('sales').doc(id);
+                    const { stok, sisa, hargaBeli, hargaJual, ...rest } = data;
+                    const { terjual, uangSupplier, labaKotor, omzet } = calculateSalesMetrics(stok, sisa, hargaBeli, hargaJual);
+                    
+                    batch.update(saleRef, {
+                        ...rest,
+                        stok, sisa, hargaBeli, hargaJual,
+                        terjual, uangSupplier, labaKotor, omzet,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+                
+                await batch.commit();
+                return true;
+            } catch (error) {
+                console.error("Error updating batch:", error);
+                throw error;
+            }
+        };
+
+        const updateRingkasBatch = async (updates) => {
+            try {
+                const today = getToday();
+                const batch = db.batch();
+                
+                for (const [key, data] of updates) {
+                    const [supplier, barang] = key.split('-');
+                    const matchingSales = salesData.filter(item => 
+                        item.supplier === supplier && 
+                        item.barang === barang && 
+                        item.tanggal === today
+                    );
+                    
+                    for (const sale of matchingSales) {
+                        const updatedData = { ...sale };
+                        updatedData.stok = data.stok;
+                        updatedData.sisa = data.sisa;
+                        
+                        const { terjual, uangSupplier, labaKotor, omzet } = calculateSalesMetrics(
+                            updatedData.stok, 
+                            updatedData.sisa, 
+                            updatedData.hargaBeli, 
+                            updatedData.hargaJual
+                        );
+                        
+                        updatedData.terjual = terjual;
+                        updatedData.uangSupplier = uangSupplier;
+                        updatedData.labaKotor = labaKotor;
+                        updatedData.omzet = omzet;
+                        
+                        const saleRef = db.collection('sales').doc(sale.id);
+                        batch.update(saleRef, {
+                            ...updatedData,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+                
+                await batch.commit();
+                return true;
+            } catch (error) {
+                console.error("Error updating ringkas batch:", error);
+                throw error;
+            }
+        };
+
+        const updateSupplierMasterBatch = async (updates) => {
+            try {
+                const batch = db.batch();
+                
+                for (const [id, data] of updates) {
+                    const supplierRef = db.collection('supplierMaster').doc(id);
+                    batch.update(supplierRef, {
+                        ...data,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+                
+                await batch.commit();
+                return true;
+            } catch (error) {
+                console.error("Error updating supplier master batch:", error);
                 throw error;
             }
         };
@@ -691,7 +740,6 @@
             try {
                 let query = db.collection('sales');
                 
-                // Karyawan hanya bisa melihat data mereka sendiri
                 if (userRole === 'Karyawan') {
                     query = query.where('createdBy', '==', currentUser.uid);
                 }
@@ -711,49 +759,10 @@
             }
         };
 
-        // Supplier Operations
-        const addSupplierPayment = async (supplierData) => {
-            try {
-                const supplierWithUser = {
-                    ...supplierData,
-                    createdBy: currentUser.uid,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                
-                const docRef = await db.collection('belumDibayar').add(supplierWithUser);
-                return docRef.id;
-            } catch (error) {
-                console.error("Error adding supplier payment:", error);
-                throw error;
-            }
-        };
-
-        const updateSupplierPayment = async (id, supplierData) => {
-            try {
-                await db.collection('belumDibayar').doc(id).update({
-                    ...supplierData,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } catch (error) {
-                console.error("Error updating supplier payment:", error);
-                throw error;
-            }
-        };
-
-        const deleteSupplierPayment = async (id) => {
-            try {
-                await db.collection('belumDibayar').doc(id).delete();
-            } catch (error) {
-                console.error("Error deleting supplier payment:", error);
-                throw error;
-            }
-        };
-
         const getSupplierPayments = async () => {
             try {
                 let query = db.collection('belumDibayar');
                 
-                // Karyawan hanya bisa melihat data mereka sendiri
                 if (userRole === 'Karyawan') {
                     query = query.where('createdBy', '==', currentUser.uid);
                 }
@@ -773,110 +782,236 @@
             }
         };
 
-        // Admin-only Operations
-        const addGaji = async (gajiData) => {
+        const addSupplierPayment = async (data) => {
             try {
-                const docRef = await db.collection('gaji').add({
-                    ...gajiData,
+                const docRef = await db.collection('belumDibayar').add({
+                    ...data,
+                    createdBy: currentUser.uid,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 return docRef.id;
             } catch (error) {
-                console.error("Error adding gaji:", error);
+                console.error("Error adding supplier payment:", error);
                 throw error;
             }
         };
 
-        const getGaji = async () => {
+        const deleteSupplierPayment = async (id) => {
             try {
-                const snapshot = await db.collection('gaji').orderBy('tanggal', 'desc').get();
-                gajiData = [];
+                await db.collection('belumDibayar').doc(id).delete();
+            } catch (error) {
+                console.error("Error deleting supplier payment:", error);
+                throw error;
+            }
+        };
+
+        const getSupplierMaster = async () => {
+            try {
+                const snapshot = await db.collection('supplierMaster').orderBy('nama').get();
+                supplierMasterData = [];
                 snapshot.forEach(doc => {
-                    gajiData.push({
+                    supplierMasterData.push({
                         id: doc.id,
                         ...doc.data()
                     });
                 });
-                return gajiData;
+                return supplierMasterData;
             } catch (error) {
-                console.error("Error getting gaji:", error);
+                console.error("Error getting supplier master:", error);
                 throw error;
             }
         };
 
-        const addPengeluaran = async (pengeluaranData) => {
+        const addSupplierMaster = async (data) => {
             try {
-                const docRef = await db.collection('pengeluaranLainnya').add({
-                    ...pengeluaranData,
+                const docRef = await db.collection('supplierMaster').add({
+                    ...data,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 return docRef.id;
             } catch (error) {
-                console.error("Error adding pengeluaran:", error);
+                console.error("Error adding supplier master:", error);
                 throw error;
             }
         };
 
-        const getPengeluaran = async () => {
+        const updateSupplierMaster = async (id, data) => {
             try {
-                const snapshot = await db.collection('pengeluaranLainnya').orderBy('tanggal', 'desc').get();
-                pengeluaranData = [];
-                snapshot.forEach(doc => {
-                    pengeluaranData.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
+                await db.collection('supplierMaster').doc(id).update({
+                    ...data,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                return pengeluaranData;
             } catch (error) {
-                console.error("Error getting pengeluaran:", error);
+                console.error("Error updating supplier master:", error);
                 throw error;
             }
         };
 
-        const updateKas = async (kasData) => {
+        const deleteSupplierMaster = async (id) => {
             try {
-                // Hanya simpan satu dokumen kas saat ini
-                const snapshot = await db.collection('kasSaatIni').limit(1).get();
-                if (snapshot.empty) {
-                    await db.collection('kasSaatIni').add({
-                        ...kasData,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                } else {
-                    const doc = snapshot.docs[0];
-                    await db.collection('kasSaatIni').doc(doc.id).update({
-                        ...kasData,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
+                await db.collection('supplierMaster').doc(id).delete();
             } catch (error) {
-                console.error("Error updating kas:", error);
+                console.error("Error deleting supplier master:", error);
                 throw error;
             }
         };
 
-        const getKas = async () => {
+        const deleteSupplierMasterBatch = async (ids) => {
             try {
-                const snapshot = await db.collection('kasSaatIni').limit(1).get();
-                kasData = [];
-                if (!snapshot.empty) {
-                    const doc = snapshot.docs[0];
-                    kasData.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
-                }
-                return kasData;
+                const batch = db.batch();
+                ids.forEach(id => {
+                    const docRef = db.collection('supplierMaster').doc(id);
+                    batch.delete(docRef);
+                });
+                await batch.commit();
+                return true;
             } catch (error) {
-                console.error("Error getting kas:", error);
+                console.error("Error deleting supplier master batch:", error);
                 throw error;
             }
+        };
+
+        // Edit Mode Management Functions
+        const activateGlobalEditMode = () => {
+            isGlobalEditMode = true;
+            document.body.classList.add('global-edit-mode');
+            updateEditButtons();
+            
+            // Render ulang tabel yang sedang aktif
+            if (!document.getElementById('inputRingkas').classList.contains('hidden')) {
+                renderRingkasTable();
+            }
+            if (!document.getElementById('inputDetail').classList.contains('hidden')) {
+                renderDetailTable();
+            }
+            
+            // Jika popup supplierMaster terbuka, render ulang
+            if (document.getElementById('supplierMasterPopup').classList.contains('active')) {
+                renderSupplierMasterTable();
+            }
+            
+            console.log('Global Edit Mode: AKTIF');
+        };
+
+        const deactivateGlobalEditMode = () => {
+            isGlobalEditMode = false;
+            document.body.classList.remove('global-edit-mode');
+            updateEditButtons();
+            
+            // Render ulang tabel yang sedang aktif
+            if (!document.getElementById('inputRingkas').classList.contains('hidden')) {
+                renderRingkasTable();
+            }
+            if (!document.getElementById('inputDetail').classList.contains('hidden')) {
+                renderDetailTable();
+            }
+            
+            // Jika popup supplierMaster terbuka, render ulang
+            if (document.getElementById('supplierMasterPopup').classList.contains('active')) {
+                renderSupplierMasterTable();
+            }
+            
+            console.log('Global Edit Mode: NONAKTIF');
+        };
+
+        const updateEditButtons = () => {
+            const editRingkasBtn = document.getElementById('editBatchRingkas');
+            const editDetailBtn = document.getElementById('editBatchDetail');
+            const editSupplierMasterBtn = document.getElementById('editBatchSupplierMaster');
+            
+            if (isGlobalEditMode) {
+                if (editRingkasBtn) {
+                    editRingkasBtn.innerHTML = '<i class="fas fa-save"></i> Simpan';
+                    editRingkasBtn.classList.remove('btn-primary');
+                    editRingkasBtn.classList.add('btn-success');
+                }
+                if (editDetailBtn) {
+                    editDetailBtn.innerHTML = '<i class="fas fa-save"></i> Simpan';
+                    editDetailBtn.classList.remove('btn-primary');
+                    editDetailBtn.classList.add('btn-success');
+                }
+                if (editSupplierMasterBtn) {
+                    editSupplierMasterBtn.innerHTML = '<i class="fas fa-save"></i> Simpan';
+                    editSupplierMasterBtn.classList.remove('btn-primary');
+                    editSupplierMasterBtn.classList.add('btn-success');
+                }
+            } else {
+                if (editRingkasBtn) {
+                    editRingkasBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editRingkasBtn.classList.remove('btn-success');
+                    editRingkasBtn.classList.add('btn-primary');
+                }
+                if (editDetailBtn) {
+                    editDetailBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editDetailBtn.classList.remove('btn-success');
+                    editDetailBtn.classList.add('btn-primary');
+                }
+                if (editSupplierMasterBtn) {
+                    editSupplierMasterBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Batch';
+                    editSupplierMasterBtn.classList.remove('btn-success');
+                    editSupplierMasterBtn.classList.add('btn-primary');
+                }
+            }
+        };
+
+        const saveAllChanges = async () => {
+            let success = true;
+            let totalChanges = 0;
+            
+            // Hitung total perubahan sebelum penyimpanan
+            totalChanges = batchChanges.ringkas.size + batchChanges.detail.size + batchChanges.supplierMaster.size;
+            
+            if (totalChanges === 0) {
+                return { success: true, totalChanges: 0 };
+            }
+            
+            console.log(`Menyimpan ${totalChanges} perubahan...`);
+
+            // Simpan perubahan ringkas
+            if (batchChanges.ringkas.size > 0) {
+                try {
+                    await updateRingkasBatch(batchChanges.ringkas);
+                    console.log('Perubahan ringkas berhasil disimpan');
+                } catch (error) {
+                    console.error("Error saving ringkas batch:", error);
+                    success = false;
+                }
+            }
+            
+            // Simpan perubahan detail
+            if (batchChanges.detail.size > 0) {
+                try {
+                    await updateSalesBatch(batchChanges.detail);
+                    console.log('Perubahan detail berhasil disimpan');
+                } catch (error) {
+                    console.error("Error saving detail batch:", error);
+                    success = false;
+                }
+            }
+            
+            // Simpan perubahan supplier master
+            if (batchChanges.supplierMaster.size > 0) {
+                try {
+                    await updateSupplierMasterBatch(batchChanges.supplierMaster);
+                    console.log('Perubahan supplier master berhasil disimpan');
+                } catch (error) {
+                    console.error("Error saving supplier master batch:", error);
+                    success = false;
+                }
+            }
+            
+            // Hapus batchChanges hanya jika semua penyimpanan berhasil
+            if (success) {
+                batchChanges.ringkas.clear();
+                batchChanges.detail.clear();
+                batchChanges.supplierMaster.clear();
+            }
+            
+            return { success, totalChanges };
         };
 
         // Real-time Listeners
         const setupRealTimeListeners = () => {
-            // Sales listener
             let salesQuery = db.collection('sales');
             if (userRole === 'Karyawan') {
                 salesQuery = salesQuery.where('createdBy', '==', currentUser.uid);
@@ -891,25 +1026,20 @@
                     });
                 });
                 
-                // Update UI jika sedang melihat data penjualan
-                if (document.getElementById('inputRingkas').classList.contains('hidden') === false) {
+                if (!document.getElementById('inputRingkas').classList.contains('hidden')) {
                     renderRingkasTable();
                 }
-                if (document.getElementById('inputDetail').classList.contains('hidden') === false) {
+                if (!document.getElementById('inputDetail').classList.contains('hidden')) {
                     renderDetailTable();
                 }
-                if (document.getElementById('inputSupplier').classList.contains('hidden') === false) {
+                if (!document.getElementById('inputSupplier').classList.contains('hidden')) {
                     renderSupplierTable();
                 }
-                if (document.getElementById('laporanRingkas').classList.contains('hidden') === false) {
+                if (!document.getElementById('laporanRingkas').classList.contains('hidden')) {
                     updateLaporanRingkas();
-                }
-                if (document.getElementById('arusKas').classList.contains('hidden') === false) {
-                    renderArusKas();
                 }
             });
 
-            // Supplier payments listener
             let supplierQuery = db.collection('belumDibayar');
             if (userRole === 'Karyawan') {
                 supplierQuery = supplierQuery.where('createdBy', '==', currentUser.uid);
@@ -929,42 +1059,19 @@
                 }
             });
 
-            // Admin-only listeners
-            if (userRole === 'Admin') {
-                db.collection('gaji').orderBy('tanggal', 'desc').onSnapshot(snapshot => {
-                    gajiData = [];
-                    snapshot.forEach(doc => {
-                        gajiData.push({
-                            id: doc.id,
-                            ...doc.data()
-                        });
+            db.collection('supplierMaster').orderBy('nama').onSnapshot(snapshot => {
+                supplierMasterData = [];
+                snapshot.forEach(doc => {
+                    supplierMasterData.push({
+                        id: doc.id,
+                        ...doc.data()
                     });
-                    renderArusKas();
                 });
-
-                db.collection('pengeluaranLainnya').orderBy('tanggal', 'desc').onSnapshot(snapshot => {
-                    pengeluaranData = [];
-                    snapshot.forEach(doc => {
-                        pengeluaranData.push({
-                            id: doc.id,
-                            ...doc.data()
-                        });
-                    });
-                    renderArusKas();
-                });
-
-                db.collection('kasSaatIni').limit(1).onSnapshot(snapshot => {
-                    kasData = [];
-                    if (!snapshot.empty) {
-                        const doc = snapshot.docs[0];
-                        kasData.push({
-                            id: doc.id,
-                            ...doc.data()
-                        });
-                    }
-                    renderArusKas();
-                });
-            }
+                
+                if (document.getElementById('supplierMasterPopup').classList.contains('active')) {
+                    renderSupplierMasterTable();
+                }
+            });
         };
 
         // UI Rendering Functions
@@ -979,7 +1086,6 @@
         const setupTableZoom = () => {
             const zoomConfigs = [
                 { in: 'zoomInRingkas', out: 'zoomOutRingkas', type: 'ringkas' },
-                { in: 'zoomInDetail', out: 'zoomOutDetail', type: 'detail' },
                 { in: 'zoomInSupplier', out: 'zoomOutSupplier', type: 'supplier' }
             ];
 
@@ -1079,59 +1185,60 @@
             
             Object.values(groupedData).forEach(item => {
                 const row = document.createElement('tr');
+                const key = `${item.supplier}-${item.barang}`;
+                const isReadOnly = !isGlobalEditMode;
+                
+                // Cek apakah ada perubahan di batchChanges.ringkas
+                let displayStok = item.stok;
+                let displaySisa = item.sisa;
+                
+                if (batchChanges.ringkas.has(key)) {
+                    const changes = batchChanges.ringkas.get(key);
+                    displayStok = changes.stok;
+                    displaySisa = changes.sisa;
+                }
+                
                 row.innerHTML = `
                     <td>${item.supplier}</td>
                     <td>${item.barang}</td>
-                    <td><input type="number" class="number-input" value="${item.stok}" data-supplier="${item.supplier}" data-barang="${item.barang}" data-field="stok"></td>
-                    <td><input type="number" class="number-input" value="${item.sisa}" data-supplier="${item.supplier}" data-barang="${item.barang}" data-field="sisa"></td>
+                    <td><input type="number" class="number-input" value="${displayStok}" data-key="${key}" data-field="stok" ${isReadOnly ? 'readonly' : ''}></td>
+                    <td><input type="number" class="number-input" value="${displaySisa}" data-key="${key}" data-field="sisa" ${isReadOnly ? 'readonly' : ''}></td>
                 `;
                 tbody.appendChild(row);
             });
             
-            setupTableInputListeners(tbody, 'input', (element) => {
-                updateSalesFromRingkas(
-                    element.getAttribute('data-supplier'),
-                    element.getAttribute('data-barang'),
-                    element.getAttribute('data-field'),
-                    parseInt(element.value) || 0
-                );
-            });
+            if (isGlobalEditMode) {
+                setupRingkasInputListeners(tbody);
+            }
         };
 
-        const updateSalesFromRingkas = async (supplier, barang, field, value) => {
-            try {
-                const today = getToday();
-                // Find all sales with matching supplier and barang HARI INI
-                const matchingSales = salesData.filter(item => 
-                    item.supplier === supplier && 
-                    item.barang === barang && 
-                    item.tanggal === today
-                );
-                
-                // Update each matching sale
-                for (const sale of matchingSales) {
-                    const updatedData = { ...sale };
-                    updatedData[field] = value;
+        const setupRingkasInputListeners = (container) => {
+            container.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', function() {
+                    const key = this.getAttribute('data-key');
+                    const field = this.getAttribute('data-field');
+                    const value = parseInt(this.value) || 0;
                     
-                    // Recalculate metrics
-                    const { terjual, uangSupplier, labaKotor, omzet } = calculateSalesMetrics(
-                        updatedData.stok, 
-                        updatedData.sisa, 
-                        updatedData.hargaBeli, 
-                        updatedData.hargaJual
-                    );
+                    if (!batchChanges.ringkas.has(key)) {
+                        const [supplier, barang] = key.split('-');
+                        const dataHariIni = getTodaySalesData();
+                        const matchingSales = dataHariIni.filter(item => 
+                            item.supplier === supplier && item.barang === barang
+                        );
+                        
+                        let stok = matchingSales.reduce((sum, item) => sum + item.stok, 0);
+                        let sisa = matchingSales.reduce((sum, item) => sum + item.sisa, 0);
+                        
+                        batchChanges.ringkas.set(key, { stok, sisa });
+                    }
                     
-                    updatedData.terjual = terjual;
-                    updatedData.uangSupplier = uangSupplier;
-                    updatedData.labaKotor = labaKotor;
-                    updatedData.omzet = omzet;
+                    const data = batchChanges.ringkas.get(key);
+                    data[field] = value;
+                    batchChanges.ringkas.set(key, data);
                     
-                    await updateSale(sale.id, updatedData);
-                }
-            } catch (error) {
-                console.error("Error updating sales from ringkas:", error);
-                alert("Gagal memperbarui data: " + error.message);
-            }
+                    console.log(`Perubahan ringkas: ${key} - ${field} = ${value}`);
+                });
+            });
         };
 
         const renderDetailTable = () => {
@@ -1147,8 +1254,16 @@
             
             dataHariIni.forEach((item, index) => {
                 const row = document.createElement('tr');
-                const terjual = item.stok - item.sisa;
-                const uangSupplier = terjual * item.hargaBeli;
+                
+                // Gunakan data dari batchChanges jika ada
+                let itemData = { ...item };
+                if (batchChanges.detail.has(item.id)) {
+                    itemData = batchChanges.detail.get(item.id);
+                }
+                
+                const terjual = itemData.stok - itemData.sisa;
+                const uangSupplier = terjual * itemData.hargaBeli;
+                const isReadOnly = !isGlobalEditMode;
                 
                 row.innerHTML = `
                     <td class="action-column">
@@ -1156,42 +1271,22 @@
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
-                    <td><input type="date" value="${item.tanggal}" data-id="${item.id}" data-field="tanggal"></td>
-                    <td><input type="text" value="${item.supplier}" data-id="${item.id}" data-field="supplier"></td>
-                    <td><input type="text" value="${item.barang}" data-id="${item.id}" data-field="barang"></td>
-                    <td><input type="number" value="${item.stok}" data-id="${item.id}" data-field="stok"></td>
-                    <td><input type="number" value="${item.sisa}" data-id="${item.id}" data-field="sisa"></td>
+                    <td><input type="date" value="${itemData.tanggal}" data-id="${item.id}" data-field="tanggal" ${isReadOnly ? 'readonly' : ''}></td>
+                    <td><input type="text" value="${itemData.supplier || ''}" data-id="${item.id}" data-field="supplier" ${isReadOnly ? 'readonly' : ''}></td>
+                    <td><input type="text" value="${itemData.barang || ''}" data-id="${item.id}" data-field="barang" ${isReadOnly ? 'readonly' : ''}></td>
+                    <td><input type="number" value="${itemData.stok || 0}" data-id="${item.id}" data-field="stok" ${isReadOnly ? 'readonly' : ''}></td>
+                    <td><input type="number" value="${itemData.sisa || 0}" data-id="${item.id}" data-field="sisa" ${isReadOnly ? 'readonly' : ''}></td>
                     <td>${terjual}</td>
-                    <td><input type="text" class="currency-input-field" value="${formatNumber(item.hargaBeli)}" data-id="${item.id}" data-field="hargaBeli"></td>
-                    <td><input type="text" class="currency-input-field" value="${formatNumber(item.hargaJual)}" data-id="${item.id}" data-field="hargaJual"></td>
+                    <td><input type="text" class="currency-input-field" value="${formatNumber(itemData.hargaBeli || 0)}" data-id="${item.id}" data-field="hargaBeli" ${isReadOnly ? 'readonly' : ''}></td>
+                    <td><input type="text" class="currency-input-field" value="${formatNumber(itemData.hargaJual || 0)}" data-id="${item.id}" data-field="hargaJual" ${isReadOnly ? 'readonly' : ''}></td>
                     <td>${formatCurrency(uangSupplier)}</td>
                 `;
                 tbody.appendChild(row);
             });
             
-            setupTableInputListeners(tbody, 'input', async (element) => {
-                const id = element.getAttribute('data-id');
-                const field = element.getAttribute('data-field');
-                let value = element.value;
-                
-                if (field === 'hargaBeli' || field === 'hargaJual') {
-                    value = parseCurrency(value);
-                } else if (field === 'stok' || field === 'sisa') {
-                    value = parseInt(value) || 0;
-                }
-                
-                try {
-                    const sale = salesData.find(item => item.id === id);
-                    if (sale) {
-                        const updatedData = { ...sale };
-                        updatedData[field] = value;
-                        await updateSale(id, updatedData);
-                    }
-                } catch (error) {
-                    console.error("Error updating sale:", error);
-                    alert("Gagal memperbarui data: " + error.message);
-                }
-            });
+            if (isGlobalEditMode) {
+                setupDetailInputListeners(tbody);
+            }
             
             tbody.querySelectorAll('.btn-hapus').forEach(btn => {
                 btn.addEventListener('click', async function() {
@@ -1208,15 +1303,36 @@
             });
         };
 
-        const setupTableInputListeners = (container, selector, callback) => {
-            container.querySelectorAll(selector).forEach(input => {
-                input.addEventListener('blur', function() {
-                    if (!isTabKeyPressed) callback(this);
-                    isTabKeyPressed = false;
-                });
-                
-                input.addEventListener('keydown', function(e) {
-                    if (e.key === 'Tab') isTabKeyPressed = true;
+        const setupDetailInputListeners = (container) => {
+            container.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', function() {
+                    const id = this.getAttribute('data-id');
+                    const field = this.getAttribute('data-field');
+                    let value = this.value;
+                    
+                    if (field === 'hargaBeli' || field === 'hargaJual') {
+                        value = parseCurrency(value);
+                    } else if (field === 'stok' || field === 'sisa') {
+                        value = parseInt(value) || 0;
+                    } else if (field === 'tanggal') {
+                        // Validasi tanggal
+                        if (!value) {
+                            value = getToday();
+                        }
+                    }
+                    
+                    if (!batchChanges.detail.has(id)) {
+                        const sale = salesData.find(item => item.id === id);
+                        if (sale) {
+                            batchChanges.detail.set(id, { ...sale });
+                        }
+                    }
+                    
+                    const data = batchChanges.detail.get(id);
+                    data[field] = value;
+                    batchChanges.detail.set(id, data);
+                    
+                    console.log(`Perubahan detail: ${id} - ${field} = ${value}`);
                 });
             });
         };
@@ -1269,30 +1385,10 @@
                         </button>
                     </td>
                     <td><input type="date" value="${item.tanggal}" data-id="${item.id}" data-field="tanggal"></td>
-                    <td><input type="text" value="${item.nama}" data-id="${item.id}" data-field="nama"></td>
-                    <td><input type="text" class="currency-input-field" value="${formatNumber(item.belumDibayar)}" data-id="${item.id}" data-field="belumDibayar"></td>
+                    <td><input type="text" value="${item.nama || ''}" data-id="${item.id}" data-field="nama"></td>
+                    <td><input type="text" class="currency-input-field" value="${formatNumber(item.belumDibayar || 0)}" data-id="${item.id}" data-field="belumDibayar"></td>
                 `;
                 tbody.appendChild(row);
-            });
-            
-            setupTableInputListeners(tbody, 'input', async (element) => {
-                const id = element.getAttribute('data-id');
-                const field = element.getAttribute('data-field');
-                let value = element.value;
-                
-                if (field === 'belumDibayar') value = parseCurrency(value);
-                
-                try {
-                    const supplier = belumDibayarData.find(item => item.id === id);
-                    if (supplier) {
-                        const updatedData = { ...supplier };
-                        updatedData[field] = value;
-                        await updateSupplierPayment(id, updatedData);
-                    }
-                } catch (error) {
-                    console.error("Error updating supplier payment:", error);
-                    alert("Gagal memperbarui data: " + error.message);
-                }
             });
             
             tbody.querySelectorAll('.btn-hapus').forEach(btn => {
@@ -1308,24 +1404,164 @@
                     }
                 });
             });
+            
+            tbody.querySelectorAll('input').forEach(input => {
+                input.addEventListener('blur', async function() {
+                    const id = this.getAttribute('data-id');
+                    const field = this.getAttribute('data-field');
+                    let value = this.value;
+                    
+                    if (field === 'belumDibayar') {
+                        value = parseCurrency(value);
+                    }
+                    
+                    try {
+                        const updateData = { [field]: value };
+                        await db.collection('belumDibayar').doc(id).update(updateData);
+                    } catch (error) {
+                        console.error("Error updating supplier payment:", error);
+                        alert("Gagal memperbarui data: " + error.message);
+                    }
+                });
+            });
         };
 
-        // PERBAIKAN: Update laporan ringkas dengan filter dan nama karyawan
+        const renderSupplierMasterTable = () => {
+            const tbody = document.querySelector('#tableSupplierMaster tbody');
+            tbody.innerHTML = '';
+            
+            if (supplierMasterData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Belum ada data master supplier</td></tr>';
+                return;
+            }
+            
+            supplierMasterData.forEach((item) => {
+                const isSelected = selectedSupplierIds.has(item.id);
+                const isReadOnly = !isGlobalEditMode;
+                
+                // Gunakan data dari batchChanges jika ada
+                let itemData = { ...item };
+                if (batchChanges.supplierMaster.has(item.id)) {
+                    itemData = batchChanges.supplierMaster.get(item.id);
+                }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <input type="checkbox" class="supplier-checkbox" data-id="${item.id}" ${isSelected ? 'checked' : ''}>
+                    </td>
+                    <td><input type="text" value="${itemData.nama || ''}" data-id="${item.id}" data-field="nama" ${isReadOnly ? 'readonly' : ''}></td>
+                    <td><input type="text" value="${itemData.barang || ''}" data-id="${item.id}" data-field="barang" ${isReadOnly ? 'readonly' : ''}></td>
+                    <td><input type="text" class="currency-input-field" value="${formatNumber(itemData.hargaBeli || 0)}" data-id="${item.id}" data-field="hargaBeli" ${isReadOnly ? 'readonly' : ''}></td>
+                    <td><input type="text" class="currency-input-field" value="${formatNumber(itemData.hargaJual || 0)}" data-id="${item.id}" data-field="hargaJual" ${isReadOnly ? 'readonly' : ''}></td>
+                    <td class="action-column">
+                        <button class="btn btn-danger btn-hapus-supplier" title="Hapus" data-id="${item.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            tbody.querySelectorAll('.supplier-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const id = this.getAttribute('data-id');
+                    if (this.checked) {
+                        selectedSupplierIds.add(id);
+                    } else {
+                        selectedSupplierIds.delete(id);
+                    }
+                });
+            });
+            
+            tbody.querySelectorAll('.btn-hapus-supplier').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.getAttribute('data-id');
+                    if (confirm('Apakah Anda yakin ingin menghapus supplier ini?')) {
+                        try {
+                            await deleteSupplierMaster(id);
+                            selectedSupplierIds.delete(id);
+                        } catch (error) {
+                            console.error("Error deleting supplier master:", error);
+                            alert("Gagal menghapus data: " + error.message);
+                        }
+                    }
+                });
+            });
+            
+            if (isGlobalEditMode) {
+                setupSupplierMasterInputListenersForBatch(tbody);
+            } else {
+                setupSupplierMasterInputListenersForInstant(tbody);
+            }
+        };
+
+        const setupSupplierMasterInputListenersForBatch = (container) => {
+            container.querySelectorAll('input[type="text"]').forEach(input => {
+                input.removeEventListener('blur', handleSupplierMasterBlurInstant);
+                input.addEventListener('input', handleSupplierMasterInputBatch);
+            });
+        };
+
+        const handleSupplierMasterInputBatch = function() {
+            const id = this.getAttribute('data-id');
+            const field = this.getAttribute('data-field');
+            let value = this.value;
+            
+            if (field === 'hargaBeli' || field === 'hargaJual') {
+                value = parseCurrency(value);
+            }
+            
+            if (!batchChanges.supplierMaster.has(id)) {
+                const supplier = supplierMasterData.find(item => item.id === id);
+                if (supplier) {
+                    batchChanges.supplierMaster.set(id, { ...supplier });
+                }
+            }
+            
+            const data = batchChanges.supplierMaster.get(id);
+            data[field] = value;
+            batchChanges.supplierMaster.set(id, data);
+            
+            console.log(`Perubahan supplier master (batch): ${id} - ${field} = ${value}`);
+        };
+
+        const setupSupplierMasterInputListenersForInstant = (container) => {
+            container.querySelectorAll('input[type="text"]').forEach(input => {
+                input.removeEventListener('input', handleSupplierMasterInputBatch);
+                input.addEventListener('blur', handleSupplierMasterBlurInstant);
+            });
+        };
+
+        const handleSupplierMasterBlurInstant = async function() {
+            const id = this.getAttribute('data-id');
+            const field = this.getAttribute('data-field');
+            let value = this.value;
+            
+            if (field === 'hargaBeli' || field === 'hargaJual') {
+                value = parseCurrency(value);
+            }
+            
+            try {
+                await updateSupplierMaster(id, { [field]: value });
+            } catch (error) {
+                console.error("Error updating supplier master:", error);
+                alert("Gagal memperbarui data: " + error.message);
+            }
+        };
+
         const updateLaporanRingkas = () => {
             const filteredSales = getFilteredSalesData();
             
             let totalTerjual = 0, totalOmzet = 0, totalLabaKotor = 0;
             
-            // Reset karyawan data
             const karyawanData = {};
             
-            // Calculate totals from filtered sales data
             filteredSales.forEach(item => {
                 totalTerjual += item.terjual || 0;
                 totalOmzet += item.omzet || 0;
                 totalLabaKotor += item.labaKotor || 0;
                 
-                // Group by createdBy (karyawan) dan gunakan nama dari field nama
                 const createdBy = item.createdBy;
                 const namaKaryawan = item.nama || `Karyawan ${createdBy.substring(0, 5)}...`;
                 
@@ -1343,7 +1579,6 @@
                 karyawanData[createdBy].totalTerjual += item.terjual || 0;
             });
             
-            // Update UI
             document.getElementById('totalTerjual').textContent = formatNumber(totalTerjual);
             document.getElementById('totalOmzet').textContent = formatCurrency(totalOmzet);
             document.getElementById('totalLabaKotor').textContent = formatCurrency(totalLabaKotor);
@@ -1372,50 +1607,6 @@
                 karyawanCards.appendChild(card);
             });
         };
-
-        const renderArusKas = async () => {
-            let totalOmzet = 0, totalLabaKotor = 0;
-            
-            // Calculate from sales data
-            salesData.forEach(item => {
-                totalOmzet += item.omzet || 0;
-                totalLabaKotor += item.labaKotor || 0;
-            });
-            
-            // Get admin data
-            let totalGaji = 0;
-            let totalPengeluaran = 0;
-            let kasSaatIni = 0;
-            
-            if (userRole === 'Admin') {
-                gajiData.forEach(item => {
-                    totalGaji += item.gaji || 0;
-                });
-                
-                pengeluaranData.forEach(item => {
-                    totalPengeluaran += item.costOther || 0;
-                });
-                
-                if (kasData.length > 0) {
-                    kasSaatIni = kasData[0].kasSaatIni || 0;
-                }
-            }
-            
-            const totalPengeluaranAll = totalGaji + totalPengeluaran;
-            const labaBersih = totalLabaKotor - totalPengeluaranAll;
-            const kasTerbaru = kasSaatIni + labaBersih;
-            
-            // Update UI
-            document.getElementById('arusKasOmzet').textContent = formatCurrency(totalOmzet);
-            document.getElementById('arusKasLabaKotor').textContent = formatCurrency(totalLabaKotor);
-            document.getElementById('arusKasLabaBersih').textContent = formatCurrency(labaBersih);
-            document.getElementById('arusKasRugi').textContent = formatCurrency(labaBersih < 0 ? Math.abs(labaBersih) : 0);
-            document.getElementById('arusKasPengeluaran').textContent = formatCurrency(totalPengeluaranAll);
-            document.getElementById('arusKasSaatIni').textContent = formatCurrency(kasSaatIni);
-            document.getElementById('arusKasTerbaru').textContent = formatCurrency(kasTerbaru);
-        };
-
-        const renderLaporanRingkas = () => updateLaporanRingkas();
 
         const updateTabNavigation = (contentId, defaultTab) => {
             tabNavigation.innerHTML = '';
@@ -1471,8 +1662,8 @@
                     
                     const newItem = {
                         tanggal: today,
-                        supplier: 'Supplier Baru',
-                        barang: 'Barang Baru',
+                        supplier: '',
+                        barang: '',
                         stok: 0,
                         sisa: 0,
                         hargaBeli: 0,
@@ -1489,65 +1680,77 @@
             }
         };
 
-        const setupDuplikasiEntri = () => {
-            if (duplikasiEntriBtn) {
-                duplikasiEntriBtn.addEventListener('click', async function() {
-                    const today = getToday();
-                    
-                    // Cek apakah sudah ada data hari ini
-                    const salesHariIni = getTodaySalesData();
-                    if (salesHariIni.length > 0) {
-                        alert(`Data hari ini (${today}) sudah ada.`);
-                        return;
-                    }
-                    
-                    // Cari data kemarin (tanggal terakhir sebelum hari ini)
-                    const yesterdayData = salesData
-                        .filter(item => item.tanggal < today)
-                        .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-                    
-                    if (yesterdayData.length === 0) {
-                        alert('Tidak ada data kemarin untuk diduplikasi.');
-                        return;
-                    }
-                    
-                    // Ambil tanggal kemarin
-                    const tanggalKemarin = yesterdayData[0].tanggal;
-                    
-                    // Filter data yang tanggalnya sama dengan tanggalKemarin
-                    const dataKemarin = salesData.filter(item => item.tanggal === tanggalKemarin);
-                    
-                    if (dataKemarin.length === 0) {
-                        alert('Tidak ada data untuk tanggal kemarin.');
-                        return;
-                    }
-                    
-                    // Duplikasi setiap dokumen
-                    let successCount = 0;
-                    for (const doc of dataKemarin) {
-                        const newDoc = {
-                            barang: doc.barang,
-                            hargaBeli: doc.hargaBeli,
-                            hargaJual: doc.hargaJual,
-                            supplier: doc.supplier,
-                            stok: 0,
-                            sisa: 0,
-                            // terjual, uangSupplier, labaKotor, omzet akan dihitung otomatis
-                            tanggal: today,
-                            nama: currentUser.nama,
-                            createdBy: currentUser.uid,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        };
-                        
-                        try {
-                            await addSale(newDoc);
-                            successCount++;
-                        } catch (error) {
-                            console.error("Gagal menduplikasi entri:", error);
+        const setupEditModeButtons = () => {
+            const editBatchRingkas = document.getElementById('editBatchRingkas');
+            const editBatchDetail = document.getElementById('editBatchDetail');
+            const editBatchSupplierMaster = document.getElementById('editBatchSupplierMaster');
+            
+            if (editBatchRingkas) {
+                editBatchRingkas.addEventListener('click', async function() {
+                    if (!isGlobalEditMode) {
+                        // Aktifkan mode edit global
+                        activateGlobalEditMode();
+                        alert('Mode edit aktif. Klik tombol "Simpan" di tab manapun untuk menyimpan semua perubahan.');
+                    } else {
+                        // Simpan semua perubahan
+                        const { success, totalChanges } = await saveAllChanges();
+                        if (success) {
+                            deactivateGlobalEditMode();
+                            if (totalChanges > 0) {
+                                alert(`Berhasil menyimpan ${totalChanges} perubahan.`);
+                            } else {
+                                alert('Tidak ada perubahan yang perlu disimpan.');
+                            }
+                        } else {
+                            alert('Gagal menyimpan perubahan. Silakan coba lagi.');
                         }
                     }
-                    
-                    alert(`Berhasil menduplikasi ${successCount} entri dari tanggal ${tanggalKemarin} ke ${today}.`);
+                });
+            }
+            
+            if (editBatchDetail) {
+                editBatchDetail.addEventListener('click', async function() {
+                    if (!isGlobalEditMode) {
+                        // Aktifkan mode edit global
+                        activateGlobalEditMode();
+                        alert('Mode edit aktif. Klik tombol "Simpan" di tab manapun untuk menyimpan semua perubahan.');
+                    } else {
+                        // Simpan semua perubahan
+                        const { success, totalChanges } = await saveAllChanges();
+                        if (success) {
+                            deactivateGlobalEditMode();
+                            if (totalChanges > 0) {
+                                alert(`Berhasil menyimpan ${totalChanges} perubahan.`);
+                            } else {
+                                alert('Tidak ada perubahan yang perlu disimpan.');
+                            }
+                        } else {
+                            alert('Gagal menyimpan perubahan. Silakan coba lagi.');
+                        }
+                    }
+                });
+            }
+            
+            if (editBatchSupplierMaster) {
+                editBatchSupplierMaster.addEventListener('click', async function() {
+                    if (!isGlobalEditMode) {
+                        // Aktifkan mode edit global
+                        activateGlobalEditMode();
+                        alert('Mode edit aktif. Klik tombol "Simpan" di tab manapun untuk menyimpan semua perubahan.');
+                    } else {
+                        // Simpan semua perubahan
+                        const { success, totalChanges } = await saveAllChanges();
+                        if (success) {
+                            deactivateGlobalEditMode();
+                            if (totalChanges > 0) {
+                                alert(`Berhasil menyimpan ${totalChanges} perubahan.`);
+                            } else {
+                                alert('Tidak ada perubahan yang perlu disimpan.');
+                            }
+                        } else {
+                            alert('Gagal menyimpan perubahan. Silakan coba lagi.');
+                        }
+                    }
                 });
             }
         };
@@ -1577,7 +1780,7 @@
                     
                     const newItem = {
                         tanggal: today,
-                        nama: 'Supplier Baru',
+                        nama: '',
                         belumDibayar: 0
                     };
                     
@@ -1597,49 +1800,127 @@
             });
         };
 
-        const setupArusKas = () => {
-            document.getElementById('updateKasBtn').addEventListener('click', async function() {
-                const value = parseCurrency(document.getElementById('inputKasManual').value);
-                try {
-                    await updateKas({ kasSaatIni: value });
-                    document.getElementById('inputKasManual').value = '';
-                    alert('Kas berhasil diperbarui');
-                } catch (error) {
-                    console.error("Error updating kas:", error);
-                    alert("Gagal memperbarui kas: " + error.message);
-                }
-            });
+        const setupSupplierMasterPopup = () => {
+            const supplierPopupDetail = document.getElementById('supplierPopupDetail');
+            const supplierMasterPopup = document.getElementById('supplierMasterPopup');
+            const closeSupplierMaster = document.getElementById('closeSupplierMaster');
+            const tambahSupplierMaster = document.getElementById('tambahSupplierMaster');
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const pasteSelectedSupplier = document.getElementById('pasteSelectedSupplier');
+            const deleteSelectedSupplier = document.getElementById('deleteSelectedSupplier');
             
-            document.getElementById('bayarGajiBtn').addEventListener('click', async function() {
-                const value = parseCurrency(document.getElementById('inputGajiKaryawan').value);
-                const today = getToday();
-                
-                try {
-                    await addGaji({ tanggal: today, gaji: value });
-                    document.getElementById('inputGajiKaryawan').value = '';
-                    alert('Gaji berhasil dicatat');
-                } catch (error) {
-                    console.error("Error adding gaji:", error);
-                    alert("Gagal mencatat gaji: " + error.message);
-                }
-            });
+            if (supplierPopupDetail) {
+                supplierPopupDetail.addEventListener('click', async () => {
+                    await getSupplierMaster();
+                    supplierMasterPopup.classList.add('active');
+                    renderSupplierMasterTable();
+                });
+            }
             
-            document.getElementById('tambahPengeluaranBtn').addEventListener('click', async function() {
-                const value = parseCurrency(document.getElementById('inputPengeluaranLain').value);
-                const today = getToday();
-                
-                try {
-                    await addPengeluaran({ tanggal: today, costOther: value });
-                    document.getElementById('inputPengeluaranLain').value = '';
-                    alert('Pengeluaran berhasil dicatat');
-                } catch (error) {
-                    console.error("Error adding pengeluaran:", error);
-                    alert("Gagal mencatat pengeluaran: " + error.message);
+            if (closeSupplierMaster) {
+                closeSupplierMaster.addEventListener('click', () => {
+                    supplierMasterPopup.classList.remove('active');
+                    selectedSupplierIds.clear();
+                });
+            }
+            
+            if (tambahSupplierMaster) {
+                tambahSupplierMaster.addEventListener('click', async function() {
+                    const newItem = {
+                        nama: '',
+                        barang: '',
+                        hargaBeli: 0,
+                        hargaJual: 0
+                    };
+                    
+                    try {
+                        await addSupplierMaster(newItem);
+                    } catch (error) {
+                        console.error("Error adding supplier master:", error);
+                        alert("Gagal menambah data: " + error.message);
+                    }
+                });
+            }
+            
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.supplier-checkbox');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                        const id = checkbox.getAttribute('data-id');
+                        if (this.checked) {
+                            selectedSupplierIds.add(id);
+                        } else {
+                            selectedSupplierIds.delete(id);
+                        }
+                    });
+                });
+            }
+            
+            if (pasteSelectedSupplier) {
+                pasteSelectedSupplier.addEventListener('click', async function() {
+                    if (selectedSupplierIds.size === 0) {
+                        alert('Pilih minimal satu supplier untuk dipaste.');
+                        return;
+                    }
+                    
+                    const today = getToday();
+                    const selectedSuppliers = supplierMasterData.filter(item => selectedSupplierIds.has(item.id));
+                    
+                    let successCount = 0;
+                    for (const supplier of selectedSuppliers) {
+                        const newItem = {
+                            tanggal: today,
+                            supplier: supplier.nama || '',
+                            barang: supplier.barang || '',
+                            stok: 0,
+                            sisa: 0,
+                            hargaBeli: supplier.hargaBeli || 0,
+                            hargaJual: supplier.hargaJual || 0
+                        };
+                        
+                        try {
+                            await addSale(newItem);
+                            successCount++;
+                        } catch (error) {
+                            console.error("Error adding sale from supplier:", error);
+                        }
+                    }
+                    
+                    alert(`Berhasil menambahkan ${successCount} entri dari supplier.`);
+                    supplierMasterPopup.classList.remove('active');
+                    selectedSupplierIds.clear();
+                });
+            }
+            
+            if (deleteSelectedSupplier) {
+                deleteSelectedSupplier.addEventListener('click', async function() {
+                    if (selectedSupplierIds.size === 0) {
+                        alert('Pilih minimal satu supplier untuk dihapus.');
+                        return;
+                    }
+                    
+                    if (confirm(`Apakah Anda yakin ingin menghapus ${selectedSupplierIds.size} supplier?`)) {
+                        try {
+                            await deleteSupplierMasterBatch(Array.from(selectedSupplierIds));
+                            selectedSupplierIds.clear();
+                            alert('Supplier berhasil dihapus.');
+                        } catch (error) {
+                            console.error("Error deleting supplier batch:", error);
+                            alert("Gagal menghapus supplier: " + error.message);
+                        }
+                    }
+                });
+            }
+            
+            window.addEventListener('click', (e) => {
+                if (e.target === supplierMasterPopup) {
+                    supplierMasterPopup.classList.remove('active');
+                    selectedSupplierIds.clear();
                 }
             });
         };
 
-        // PERBAIKAN: Setup filter listeners untuk update otomatis
         const setupLaporanRingkasFilterListeners = () => {
             const periodeSelect = document.getElementById('periodeRingkas');
             const tanggalMulai = document.getElementById('tanggalMulaiRingkas');
@@ -1676,7 +1957,6 @@
             menuList.innerHTML = '';
             
             if (userRole === 'Karyawan') {
-                // Menu untuk Karyawan
                 menuList.innerHTML = `
                     <li class="menu-item" id="laporanPenjualan">
                         <span><i class="fas fa-chart-line"></i> Laporan Penjualan</span>
@@ -1694,7 +1974,6 @@
                     </li>
                 `;
             } else if (userRole === 'Admin') {
-                // Menu untuk Admin
                 menuList.innerHTML = `
                     <li class="menu-item" id="laporanKeuangan">
                         <span><i class="fas fa-file-invoice-dollar"></i> Laporan Keuangan</span>
@@ -1702,7 +1981,6 @@
                     </li>
                     <ul class="submenu" id="submenuKeuangan">
                         <li class="submenu-item" data-content="laporanRingkas">Laporan Ringkas</li>
-                        <li class="submenu-item" data-content="arusKas">Arus Kas</li>
                     </ul>
                     
                     <li class="menu-item" id="switchMode">
@@ -1714,7 +1992,6 @@
                 `;
             }
             
-            // Setup menu event listeners
             const laporanPenjualan = document.getElementById('laporanPenjualan');
             const laporanKeuangan = document.getElementById('laporanKeuangan');
             const submenuPenjualan = document.getElementById('submenuPenjualan');
@@ -1781,8 +2058,7 @@
                                 renderDetailTable();
                                 renderSupplierTable();
                             },
-                            'laporanRingkas': renderLaporanRingkas,
-                            'arusKas': renderArusKas
+                            'laporanRingkas': updateLaporanRingkas
                         };
                         
                         if (renderFunctions[contentId]) renderFunctions[contentId]();
@@ -1807,41 +2083,28 @@
 
         // Initialize App
         document.addEventListener('DOMContentLoaded', () => {
-            // Firebase Auth State Listener
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
-                    // User is signed in
                     currentUser = user;
                     
                     try {
                         const userData = await getUserData(user.uid);
                         userRole = userData.role;
                         
-                        // TAMBAHKAN: Simpan nama user ke currentUser
                         currentUser.nama = userData.nama;
                         
-                        // Update UI
                         userName.textContent = userData.nama;
                         userRoleElement.textContent = userRole;
                         userInfo.classList.remove('hidden');
                         
-                        // Setup menu based on role
                         setupMenuBasedOnRole();
                         
-                        // Load initial data
                         await getSales();
                         await getSupplierPayments();
+                        await getSupplierMaster();
                         
-                        if (userRole === 'Admin') {
-                            await getGaji();
-                            await getPengeluaran();
-                            await getKas();
-                        }
-                        
-                        // Setup real-time listeners
                         setupRealTimeListeners();
                         
-                        // Show main content
                         loginPopup.classList.remove('active');
                         mainHeader.classList.remove('hidden');
                         mainContent.classList.remove('hidden');
@@ -1852,7 +2115,6 @@
                         await logoutUser();
                     }
                 } else {
-                    // User is signed out
                     currentUser = null;
                     userRole = null;
                     mainHeader.classList.add('hidden');
@@ -1862,7 +2124,6 @@
                 }
             });
 
-            // Login Form Handler
             loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
@@ -1875,7 +2136,6 @@
                 
                 try {
                     await loginWithEmailPassword(email, password);
-                    // Auth state listener will handle the rest
                 } catch (error) {
                     console.error("Login error:", error);
                     loginFooter.textContent = 'Login gagal: ' + error.message;
@@ -1884,19 +2144,18 @@
                 }
             });
             
-            // Other UI event listeners
             menuBtn.addEventListener('click', () => menuPopup.classList.add('active'));
             closeMenu.addEventListener('click', () => menuPopup.classList.remove('active'));
             window.addEventListener('click', (e) => { if (e.target === menuPopup) menuPopup.classList.remove('active'); });
             
             setupTambahEntri();
-            setupDuplikasiEntri();
+            setupEditModeButtons();
             setupSupplierPopup();
-            setupArusKas();
+            setupSupplierMasterPopup();
             setupCurrencyInputs();
             setupSearchFunctionality();
             setupTableZoom();
-            setupLaporanRingkasFilterListeners(); // PERBAIKAN: Panggil fungsi yang sudah diperbaiki
+            setupLaporanRingkasFilterListeners();
         });
     </script>
 </body>
